@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head th:include="head">
+</head>
+<body class="no-skin">
+	<div class="main-container" id="main-container">
+		<div class="main-content">
+			<div class="main-content-inner">
+				<div class="page-content">
+					<div class="row">
+						<div class="col-xs-12">
+							<!-- 检索  -->
+							<form id="searchForm">
+								<table style="margin-top: 5px;">
+									<tr>
+										<td>
+											<div class="nav-search">
+												<span class="input-icon"> <input type="text"
+													placeholder="请输入关键字" class="nav-search-input"
+													style="width: 120px;" autocomplete="off" name="keyword" />
+													<i class="ace-icon fa fa-search nav-search-icon"></i>
+												</span>
+											</div>
+										</td>
+										<!-- 操作时间查询 -->
+										<td style="padding-left: 2px;">
+											<div
+												class="input-group input-medium date-picker input-daterange">
+												<input name="startDate" id="startDate" class="form-control"
+													type="text" value="" readonly="readonly"
+													style="width: 88px; height: 28px;" placeholder="开始日期"
+													title="开始日期" /> <span class="input-group-addon">-</span><input
+													name="endDate" id="endDate" class="form-control"
+													readonly="readonly" placeholder="结束日期" title="结束日期"
+													style="width: 88px; height: 28px;" type="text" value="" />
+											</div>
+										</td>
+										<!-- 如果要查询失效的数据，去掉注释 -->
+
+										<td style="vertical-align: top; padding-left: 2px;"><select
+											class="chosen-select form-control" name="valid"
+											data-placeholder="请选择"
+											style="vertical-align: top; width: 90px;">
+												<option value=""></option>
+												<option value="">全部</option>
+												<option value="true" selected="selected">有效</option>
+												<option value="false">无效</option>
+										</select></td>
+
+										<td style="vertical-align: top; padding-left: 2px"><a
+											class="btn btn-light btn-xs" onclick="searchData();"
+											title="检索"><i id="nav-search-icon"
+												class="ace-icon fa fa-search bigger-110 nav-search-icon blue"></i></a></td>
+										<td style="vertical-align: top; padding-left: 2px"><a
+											class="btn btn-light btn-xs"
+											onclick="clearForm('searchForm');" title="重置"><i
+												class="ace-icon fa fa-circle-o-notch bigger-110 nav-search-icon blue"></i></a>
+											<a class="btn btn-mini btn-info" onclick="createCode();">生成代码</a></td>
+										<!-- <td style="vertical-align: top; padding-left: 2px;"><a class="btn btn-light btn-xs" onclick="toExcel();" title="导出到EXCEL"><i
+												id="nav-search-icon" class="ace-icon fa fa-download bigger-110 nav-search-icon blue"></i></a></td> -->
+									</tr>
+								</table>
+							</form>
+							<!-- 检索  -->
+							<table id="simple-table"
+								class="table table-striped table-bordered table-hover"
+								style="margin-top: 5px;">
+							</table>
+							<!-- 操作 按钮模版（为了扩展操作按钮，所以提到界面上来，可以很好的自定义）  -->
+							<div style="display: none;" id="optButtonId">
+								<a class="btn btn-xs btn-success" title="编辑" handle="savePage">
+									<i class="ace-icon fa fa-pencil-square-o bigger-120" title="编辑"></i>
+								</a><a class="btn btn-xs btn-danger" handle="invalid"> <i
+									class="ace-icon fa fa-trash-o bigger-120" title="删除"></i></a> <a
+									class="btn btn-xs btn-info" handle="revalid"> <i
+									class="ace-icon fa fa-recycle bigger-120" title="恢复"></i></a>
+							</div>
+							<div class="page-header position-relative">
+								<table style="width: 100%;">
+									<tr>
+										<td style="vertical-align: top;"><a
+											class="btn btn-mini btn-success" onclick="savePage(true);">新增</a>
+											<a class="btn btn-mini btn-danger" id="batchInvalid"
+											onclick="makeAll(0);" title="批量删除"><i
+												class='ace-icon fa fa-trash-o bigger-120'></i></a> <!-- 如果要恢复删除的数据打开下面的注释 -->
+											<!-- <a class="btn btn-mini btn-info" id="batchRevalid" onclick="makeAll(1);" th:if="${revalid}"
+											title="批量恢复"><i class='ace-icon fa fa-recycle bigger-120'></i></a>
+										--></td>
+										<!-- 分页 -->
+										<td
+											style="vertical-align: top; float: right; position: relative;"
+											id="page" th:include="page"></td>
+									</tr>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<form id="saveForm" class="form-horizontal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"
+							aria-hidden="true">×</button>
+						<h4 class="modal-title" id="myModalLabel">编辑</h4>
+					</div>
+					<div class="modal-body">
+						<div style="color: red;text-align: center;">
+							***注意不要增加<span th:text="${params.tableName+'_id'}"></span><span th:if="${!params.rel}" th:text="${','+params.tableName+'_name,uid,utime,ctime,valid;系统默认生成'}"></span>
+						</div>
+						<input type="hidden" name="columncodeId" />
+						<div class="form-group">
+							<label for="columncodeName" class="col-sm-2 control-label">列名</label>
+							<div class="col-sm-10">
+								<!-- required="required" check-msg="列名不能为空!"  验证空 -->
+								<input type="text" class="form-control" required="required"
+									check-msg="列名不能为空!" name="columncodeName" id="columncodeName"
+									placeholder="请输入列名,必须与表名保持一致，例如bs_meeting表， 那么meeting_name" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="type" class="col-sm-2 control-label">类型</label>
+							<div class="col-sm-10">
+								<!-- required="required" check-msg="类型不能为空!"  验证空 -->
+								<select class="form-control" name="type" id="type">
+									<option selected="selected" value="varchar">varchar</option>
+									<option value="int">int</option>
+									<option value="datatime">datatime</option>
+									<option value="double">double</option>
+									<option value="tinyint">tinyint</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="commet" class="col-sm-2 control-label">注释</label>
+							<div class="col-sm-10">
+								<!-- required="required" check-msg="注释不能为空!"  验证空 -->
+								<input type="text" class="form-control" name="commet"
+									id="commet" placeholder="请输入注释,注释为空，则生成的页面不会显示该列！" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="defaultNull" class="col-sm-2 control-label">默认空</label>
+							<div class="col-sm-10">
+								<select class="form-control" name="defaultNull" id="defaultNull">
+									<option value="true" selected="selected">true</option>
+									<option value="false">false</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="length" class="col-sm-2 control-label">长度</label>
+							<div class="col-sm-10">
+								<!-- required="required" check-msg="长度不能为空!"  验证空 -->
+								<input type="text" class="form-control" value="50" name="length"
+									id="length" placeholder="请输入长度" />
+							</div>
+						</div>
+
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default btn-sm"
+							onclick="clearForm('saveForm');">重置</button>
+						<button id="saveButton" type="button"
+							class="btn btn-primary btn-sm">保存</button>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+		var jsons = [{"columnName":"列名","propertyName":"columncodeName"},{"columnName":"类型","propertyName":"type"},{"columnName":"长度","propertyName":"length"},{"columnName":"默认空","propertyName":"defaultNull"}];
+		jsons.push({"columnName":"注释","propertyName":"commet"});
+		var idProperity = "columncodeId";
+		var datagrid = getDefalutDatagrid(jsons, idProperity,true);
+		$(function() {
+			
+		});
+		var tablecodeId = /*[[${params.tablecodeId}]]*/;
+		function searchData() {
+			searchDefault({tableId:tablecodeId,page:false}, function(result) {
+				datagrid.loadData(result.list);
+			});
+		}
+		function createCode(){
+				var msg = '该操作将会删除跟该表相关的所有代码，确定要生成代碼?';
+				bootbox
+						.confirm(
+								msg,
+								function(result) {
+									if (result) {
+											doPost({
+												url : 'tl/columncode/createCode',
+												data : {
+													ids : tablecodeId
+												},
+												success : function(result) {
+													showSuccessMsg("生成代码成功!");
+														searchData();
+												}
+											});
+									}
+								});
+		}
+		/*
+		 *  新增操作前验证修改请求参数
+		 */
+		function beforeAddUpdateParam(data) {
+			return check(data);
+		}
+		/*
+		 *  修改操作前验证修改请求参数
+		 */
+		function beforeEditUpdateParam(data) {
+			return check(data);
+		}
+		function check(data) {
+			data.tableId = tablecodeId;
+			return true;
+		}
+		/*]]>*/
+	</script>
+</body>
+</html>
+

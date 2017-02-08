@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.project.module.tl.dao.TablecodeMapper">
+	<resultMap id="BaseResultMap" type="com.project.entity.Tablecode">
+		<!-- WARNING - @mbggenerated -->
+		<id column="tablecode_id" property="tablecodeId" jdbcType="VARCHAR" />
+		<result column="tablecode_name" property="tablecodeName"
+			jdbcType="VARCHAR" />
+		<result column="commet" property="commet" jdbcType="VARCHAR" />
+		<result column="ctime" property="ctime" jdbcType="TIMESTAMP" />
+		<result column="utime" property="utime" jdbcType="TIMESTAMP" />
+		<result column="uid" property="uid" jdbcType="VARCHAR" />
+		<result column="valid" property="valid" jdbcType="BIT" />
+	</resultMap>
+	<sql id="baseWhere">
+		<trim prefix="where" prefixOverrides="and | or">
+			<if test="tablecodeId != null and tablecodeId != ''">
+				and tt.tablecode_id = #{tablecodeId}
+			</if>
+			<if test="tablecodeName != null and tablecodeName != ''">
+				and tt.tablecode_name like #{onlyTablecodeName}
+			</if>
+			<if test="keyword != null and keyword != ''">
+				and (tt.tablecode_name like #{onlyKeyword} <!-- or 字段二 like #{onlyKeyword} -->
+				)
+			</if>
+			<if test="ctime != null">
+				and tt.ctime = #{ctime}
+			</if>
+			<if test="utime != null">
+				and tt.utime = #{utime}
+			</if>
+			<if test="uid != null and uid != ''">
+				and tt.uid = #{uid}
+			</if>
+			<if test="valid != null">
+				and tt.valid = #{valid}
+			</if>
+			<if test="startDate != null"> and tt.utime &gt; #{startDate}
+			</if>
+			<if test="endDate != null"> and tt.utime &lt; #{endDate}
+			</if>
+		</trim>
+	</sql>
+	<select id="queryMapByCondition" resultType="map">
+		select
+		tt.tablecode_id as tablecodeId,
+		tt.tablecode_name as
+		tablecodeName,
+		tt.commet as commet,
+		tt.ctime as ctime,
+		tt.utime as utime,
+		tt.uid as uid,
+		tt.valid as valid
+		from tl_tablecode tt
+		<include refid="baseWhere"></include>
+	</select>
+	<update id="createTable">
+		<foreach collection="tablecodeVOs" separator=";" item="tab">
+			DROP TABLE IF EXISTS `${tab.tablecodeName}`;
+			create table
+			`${tab.tablecodeName}`(`${tab.tableId}`
+			<if test="!(tab.rel)">VARCHAR(50) NOT NULL </if>
+			<if test="tab.rel">int(11) NOT NULL AUTO_INCREMENT</if>
+			,
+			<if test="!(tab.rel)">
+				`${tab.tableName}` VARCHAR(50) NOT NULL
+				<if test="tab.commet != null and tab.commet != ''">
+					COMMENT '${tab.commet}名称'
+				</if>
+				,
+			</if>
+			<foreach collection="tab.columncodes" separator="," item="item">
+				`${item.columncodeName}` ${item.type}
+				<if test="item.length != null">(${item.length})</if>
+				<if test="item.defaultNull">
+					DEFAULT NULL
+				</if>
+				<if test="!item.defaultNull">
+					NOT NULL
+				</if>
+				<if test="item.commet != null and item.commet != ''">
+					COMMENT '${item.commet}'
+				</if>
+			</foreach>
+			,
+			<if test="!(tab.rel)">
+				`ctime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				`utime` datetime DEFAULT NULL,
+				`uid` varchar(50) DEFAULT NULL,
+				`valid` tinyint(1) DEFAULT '1',
+			</if>
+			PRIMARY KEY (`${tab.tableId}`)
+			) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4
+		</foreach>
+	</update>
+</mapper>

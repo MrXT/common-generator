@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.project.module.tl.dao.ColumncodeMapper" >
+  <resultMap id="BaseResultMap" type="com.project.entity.Columncode" >
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="columncode_id" property="columncodeId" jdbcType="VARCHAR" />
+    <result column="columncode_name" property="columncodeName" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="length" property="length" jdbcType="INTEGER" />
+    <result column="default_null" property="defaultNull" jdbcType="BIT" />
+    <result column="table_id" property="tableId" jdbcType="VARCHAR" />
+     <result column="commet" property="commet" jdbcType="VARCHAR" />
+    <result column="valid" property="valid" jdbcType="BIT" />
+    <result column="ctime" property="ctime" jdbcType="TIMESTAMP" />
+    <result column="uid" property="uid" jdbcType="VARCHAR" />
+    <result column="utime" property="utime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="baseWhere">
+    <trim prefix="where" prefixOverrides="and | or">
+      <if test="columncodeId != null and columncodeId != ''">
+        and tc.columncode_id = #{columncodeId}
+      </if>
+      <if test="columncodeName != null and columncodeName != ''">
+        and tc.columncode_name like #{onlyColumncodeName}
+      </if>
+      <if test="keyword != null and keyword != ''">
+        and (tc.columncode_name like #{onlyKeyword} <!-- or 字段二 like #{onlyKeyword} -->)
+      </if>
+      <if test="type != null and type != ''">
+        and tc.type = #{type}
+      </if>
+      <if test="length != null">
+        and tc.length = #{length}
+      </if>
+      <if test="defaultNull != null">
+        and tc.default_null = #{defaultNull}
+      </if>
+      <if test="tableId != null and tableId != ''">
+        and tc.table_id = #{tableId}
+      </if>
+      <if test="valid != null">
+        and tc.valid = #{valid}
+      </if>
+      <if test="ctime != null">
+        and tc.ctime = #{ctime}
+      </if>
+      <if test="uid != null and uid != ''">
+        and tc.uid = #{uid}
+      </if>
+      <if test="utime != null">
+        and tc.utime = #{utime}
+      </if>
+      <if test="startDate != null">
+        and tc.utime &gt; #{startDate}
+      </if>
+      <if test="endDate != null">
+        and tc.utime &lt; #{endDate}
+      </if>
+    </trim>
+  </sql>
+  <select id="queryMapByCondition" resultType="map">
+    select 
+      tc.columncode_id as columncodeId,
+      tc.columncode_name as columncodeName,
+      tc.type as type,
+      tc.length as length,
+      tc.commet as commet,
+      tc.default_null as defaultNull,
+      tc.table_id as tableId,
+      tc.valid as valid,
+      tc.ctime as ctime,
+      tc.uid as uid,
+      tc.utime as utime
+    from tl_columncode tc
+    <include refid="baseWhere"></include>
+  </select>
+</mapper>
